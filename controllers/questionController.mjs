@@ -32,9 +32,9 @@ const QuestionController = {
         try {
             const { questionId } = req.params;
             const question = await QuestionService.getQuestionById(questionId);
-            res.status(200).json({data: question});
+            res.status(200).json({ data: question });
         } catch (error) {
-            if (error.message === "Question not found") {
+            if (error instanceof NotFoundError) {
                 return res.status(404).json({ message: error.message });
             }
     
