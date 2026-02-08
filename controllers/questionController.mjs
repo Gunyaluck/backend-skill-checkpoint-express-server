@@ -14,7 +14,7 @@ const QuestionController = {
     getQuestions: async (req, res) => {
         try {
             const questions = await QuestionService.getQuestions();
-            res.status(200).json(questions);
+            res.status(200).json({data: questions});
         } catch (error) {
             res.status(500).json({ "message": "Unable to fetch questions." });
         }
@@ -23,7 +23,7 @@ const QuestionController = {
         try {
             const { title, category } = req.query;
             const questions = await QuestionService.searchQuestions(title, category);
-            res.status(200).json(questions);
+            res.status(200).json({data: questions});
         } catch (error) {
             res.status(500).json({ "message": "Unable to search questions." });
         }
@@ -32,9 +32,13 @@ const QuestionController = {
         try {
             const { questionId } = req.params;
             const question = await QuestionService.getQuestionById(questionId);
-            res.status(200).json(question);
+            res.status(200).json({data: question});
         } catch (error) {
-            res.status(500).json({ "message": "Unable to fetch question." });
+            if (error.message === "Question not found") {
+                return res.status(404).json({ message: error.message });
+            }
+    
+            res.status(500).json({ message: "Unable to fetch question." });
         }
     },
     updateQuestion: async (req, res) => {
@@ -42,7 +46,7 @@ const QuestionController = {
             const { questionId } = req.params;
             const { title, description, category } = req.body;
             const question = await QuestionService.updateQuestion(questionId, title, description, category);
-            res.status(200).json({ "message": "Question updated successfully.", "question": question });
+            res.status(200).json({ "message": "Question updated successfully.", data: question });
         } catch (error) {
             res.status(500).json({ "message": "Unable to update question." });
         }
@@ -61,7 +65,7 @@ const QuestionController = {
             const { questionId } = req.params;
             const { content } = req.body;
             const answer = await QuestionService.createAnswer(questionId, content);
-            res.status(201).json({ "message": "Answer created successfully.", "answer": answer });
+            res.status(201).json({ "message": "Answer created successfully.", data: answer });
         } catch (error) {
             res.status(500).json({ "message": "Unable to create answer." });
         }
@@ -70,7 +74,7 @@ const QuestionController = {
         try {
             const { questionId } = req.params;
             const answers = await QuestionService.getAnswers(questionId);
-            res.status(200).json(answers);
+            res.status(200).json({data: answers});
         } catch (error) {
             res.status(500).json({ "message": "Unable to fetch answers." });
         }

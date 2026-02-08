@@ -156,13 +156,25 @@ const QuestionRepository = {
     // ผู้ใช้งานสามารถที่จะลบคำตอบออก 
     deleteAnswer: async (questionId) => {
         try {
-            const result = await connectionPool.query("DELETE FROM answers WHERE answers.question_id = $1 RETURNING *", [questionId]);
-            if (result.rowCount === 0) {
-                throw new Error("Answer not found.");
+            // 1. เช็คว่า question มีอยู่จริงไหม
+            const questionResult = await connectionPool.query(
+                "SELECT 1 FROM questions WHERE id = $1",
+                [questionId]
+            );
+    
+            if (questionResult.rowCount === 0) {
+                throw new Error("Question not found.");
             }
-            return result.rows;
-        }
-        catch (error) {
+    
+            // 2. ลบ answers (อาจได้ 0 แถว)
+            const deleteResult = await connectionPool.query(
+                "DELETE FROM answers WHERE question_id = $1 RETURNING *",
+                [questionId]
+            );
+    
+            // 3. สำเร็จเสมอ แม้จะไม่มี answer
+            return deleteResult.rows; // [] ถ้าไม่มีคำตอบ
+        } catch (error) {
             throw error;
         }
     },
